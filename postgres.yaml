@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-db-stateful
+spec:
+  selector:
+    matchLabels:
+      app: postgres-db # doit correspondre à .spec.template.metadata.labels
+  serviceName: "postgres-db-service"
+  replicas: 3 # est 1 par défaut
+  template:
+    metadata:
+      labels:
+        app: postgres-db # doit correspondre à .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: postgres-db
+        image: postgres:13
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/database-data
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets
+              key: password
+          
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db-service
+  namespace: default
+spec:
+  selector:
+    app: postgres
+  type: ClusterIP
+  ports:
+  - name: postgres
+    protocol: TCP
+    port: 8080
+    targetPort: 8080

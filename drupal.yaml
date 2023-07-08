@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal-deployment
+  labels:
+    app: drupal
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: drupal
+  template:
+    metadata:
+      labels:
+        app: drupal
+    spec:
+      containers:
+      - name: drupal
+        image: drupal:10.0.10-php8.1-fpm-alpine3.18
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
