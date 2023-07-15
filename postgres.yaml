@@ -5,13 +5,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: postgres-db # doit correspondre à .spec.template.metadata.labels
+      app: postgres-db
   serviceName: "postgres-db-service"
-  replicas: 3 # est 1 par défaut
+  replicas: 3
   template:
     metadata:
       labels:
-        app: postgres-db # doit correspondre à .spec.selector.matchLabels
+        app: postgres-db
     spec:
       terminationGracePeriodSeconds: 10
       containers:
@@ -20,20 +20,31 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: postgres-data
+        - name: postgres-pv
           mountPath: /var/database-data
         env:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgres-secrets
-              key: password
-          
+              key: password 
+        - name: POSTGRES_USER
+          valueFrom:
+              secretKeyRef:
+                name: postgres-secrets
+                key: username
+        - name: POSTGRES_DB
+          valueFrom:
+              configMapKeyRef:
+                name: postgres-config-map
+                key: database
   volumeClaimTemplates:
   - metadata:
-      name: postgres-data
+      name: postgres-pv
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      accessModes:
+      - ReadWriteOnce
       resources:
         requests:
           storage: 1Gi
@@ -45,7 +56,7 @@ metadata:
   namespace: default
 spec:
   selector:
-    app: postgres
+    app: postgres-db
   type: ClusterIP
   ports:
   - name: postgres

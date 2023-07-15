@@ -17,13 +17,33 @@ spec:
       containers:
       - name: drupal
         image: drupal:10.0.10-php8.1-fpm-alpine3.18
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secrets
+              key: password 
+        - name: POSTGRES_USER
+          valueFrom:
+              secretKeyRef:
+                name: postgres-secrets
+                key: username
+        - name: POSTGRES_DB
+          valueFrom:
+              configMapKeyRef:
+                name: postgres-config-map
+                key: database
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: drupal-service
 spec:
+  selector:
+    app: drupal
+  type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 9376
+      port: 8080
+      targetPort: 80
+      nodePort: 30000
