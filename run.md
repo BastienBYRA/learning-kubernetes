@@ -1,12 +1,14 @@
 # Comment run le cluster
 
+Si avec minikube
+- minikube addons enable ingress
+
 - kubectl apply -f postgres-secrets.yaml
 - kubectl apply -f postgres-config-map.yaml
 - kubectl apply -f persistent-volume.yaml
 - kubectl apply -f postgres.yaml
-    - kubectl get pods => Attendez que les 3 instances de BDD soit en status "Running"
 - kubectl apply -f drupal.yaml
-    - kubectl get pods => Pareil pour Drupal
+- kubectl apply -f drupal-ingress.yaml
 
 Si avec Minikube,
 - minikube service drupal-service
